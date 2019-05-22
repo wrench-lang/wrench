@@ -1,0 +1,11 @@
+import('player')
+
+alias('list', 'l')
+
+fn('move', [<Player player, Int speed> : Void
+    try(
+        [ret(update(player, l(x), add, speed))],
+        [<err> print(err)]
+    )
+])
+

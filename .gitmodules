@@ -1,3 +1,6 @@
 [submodule "deps/mem-pool"]
 	path = deps/mem-pool
 	url = https://github.com/Isty001/mem-pool
+[submodule "deps/ctest"]
+	path = deps/ctest
+	url = https://github.com/Isty001/ctest
