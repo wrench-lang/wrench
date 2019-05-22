@@ -1,12 +1,3 @@
-[submodule "deps/ctest"]
-	path = deps/ctest
-	url = https://github.com/bvdberg/ctest
 [submodule "deps/mem-pool"]
 	path = deps/mem-pool
 	url = https://github.com/Isty001/mem-pool
-[submodule "deps/collections.c"]
-	path = deps/collections.c
-	url = https://github.com/Isty001/collections.c
-[submodule "deps/vec"]
-	path = deps/vec
-	url = https://github.com/Isty001/vec
