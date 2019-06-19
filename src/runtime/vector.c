@@ -10,8 +10,7 @@ int vec_assure_size(char **data, uint32_t *length, uint32_t *capacity, size_t el
 
     uint32_t new_capacity = 0 == *capacity ? 10 : *capacity << 1;
 
-    void *new;
-    new = wrench_allocate(new_capacity * elem_size);
+    void *new = wrench_allocate(new_capacity * elem_size);
 
     if (*data) {
         memmove(new, *data, *capacity * elem_size);

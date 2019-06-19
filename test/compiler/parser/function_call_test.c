@@ -9,6 +9,7 @@ CTEST(parser, function_call)
 
     WcharVec val_print;
     vec_init(&val_print);
+
     vec_push(&val_print, L'p');
     vec_push(&val_print, L'r');
     vec_push(&val_print, L'i');
@@ -18,10 +19,6 @@ CTEST(parser, function_call)
     WcharVec val_paren_left;
     vec_init(&val_paren_left);
     vec_push(&val_paren_left, CHR_PAREN_LEFT);
-
-    WcharVec val_paren_left_2;
-    vec_init(&val_paren_left_2);
-    vec_push(&val_paren_left_2, CHR_PAREN_LEFT);
 
     WcharVec val_str;
     vec_init(&val_str);
@@ -44,6 +41,10 @@ CTEST(parser, function_call)
     vec_push(&val_sym, L's');
     vec_push(&val_sym, L't');
 
+    WcharVec val_paren_left_2;
+    vec_init(&val_paren_left_2);
+    vec_push(&val_paren_left_2, CHR_PAREN_LEFT);
+
     WcharVec val_paren_right;
     vec_init(&val_paren_right);
     vec_push(&val_paren_right, CHR_PAREN_RIGHT);
@@ -54,14 +55,14 @@ CTEST(parser, function_call)
 
     Token print = {.type = T_SYMBOL, .value = val_print};
     Token paren_left = {.type = T_PAREN_LEFT, .value = val_paren_left};
-    Token paren_left_2 = {.type = T_PAREN_LEFT, .value = val_paren_left_2};
     Token str = {.type = T_STRING, .value = val_str};
     Token comma = {.type = T_COMMA, .value = val_comma};
     Token symbol = {.type = T_SYMBOL, .value = val_sym};
+    Token paren_left_2 = {.type = T_PAREN_LEFT, .value = val_paren_left_2};
     Token paren_right = {.type = T_PAREN_RIGHT, .value = val_paren_right};
     Token paren_right2 = {.type = T_PAREN_RIGHT, .value = val_paren_right2};
 
-    // print('Hello', test())
+    /* // print('Hello', test()) */
     ASSERT_EQUAL(PARSER_OK, parsed_file_append(file, &print));
     ASSERT_EQUAL(PARSER_OK, parsed_file_append(file, &paren_left));
     ASSERT_EQUAL(PARSER_OK, parsed_file_append(file, &str));

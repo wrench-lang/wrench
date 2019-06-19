@@ -32,7 +32,6 @@ struct FunctionCall {
         bool closure_param_list;
         bool closure_body;
     } ctx;
-    TokenTypeVec expectations;
 };
 
 typedef struct {
@@ -58,6 +57,7 @@ typedef struct {
     FunctionCallVec *function_stack;
     Token prev;
     FunctionCallVec *fn_calls;
+    TokenTypeVec expectations;
 } ParsedFile;
 
 

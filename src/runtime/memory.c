@@ -19,24 +19,25 @@ void memory_deinit(void)
 void *wrench_allocate(size_t size)
 {
     void *ptr;
-#ifndef USE_MALLOC
+#ifdef USE_MALLOC
+    ptr = malloc(size);
+#else
     MemPoolError err;
 
     if (MEM_POOL_ERR_OK != (err = pool_variable_alloc(COMMON_POOL, size, &ptr))) {
         wrench_fatalf("Unable to allocate memory. Code: %d", err);
     }
-    memset(ptr, 0, size);
-
-#else
-    ptr = malloc(size);
 #endif
+    memset(ptr, 0, size);
 
     return ptr;
 }
 
 void *wrench_reallocate(void *old, size_t size)
 {
-#ifndef USE_MALLOC
+#ifdef USE_MALLOC
+    return realloc(old, size);
+#else
     void *new = wrench_allocate(size);
 
     if (NULL != old) {
@@ -45,8 +46,6 @@ void *wrench_reallocate(void *old, size_t size)
     }
 
     return new;
-#else
-    return realloc(old, size);
 #endif
 }
 
@@ -54,13 +53,13 @@ void wrench_free(void *ptr)
 {
     if (NULL == ptr) return;
 
-#ifndef USE_MALLOC
+#ifdef USE_MALLOC
+    free(ptr);
+#else
     MemPoolError err;
 
     if (MEM_POOL_ERR_OK != (err = pool_variable_free(COMMON_POOL, ptr))) {
         wrench_fatalf("Unable to free memory. Code: %d", err);
     }
-#else
-    free(ptr);
 #endif
 }
