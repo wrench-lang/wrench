@@ -17,6 +17,7 @@ typedef enum {
     T_COMMA,
     T_STRING,
     T_SYMBOL,
+    T_COLON,
     T_EOF
 } TokenType;
 
@@ -29,11 +30,14 @@ typedef enum {
 #define CHR_COMMA           L','
 #define CHR_APOSTHROPE      L'\''
 #define CHR_NEW_LINE        L'\n'
+#define CHR_COLON           L':'
 #define CHR_SPACE           L' '
+
+typedef vec_type(wchar_t) WcharVec;
 
 typedef struct {
     TokenType type;
-    WrenchWcharVec value;
+    WcharVec value;
 } Token;
 
 typedef struct TokenStream TokenStream;

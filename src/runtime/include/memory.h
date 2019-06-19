@@ -7,7 +7,9 @@
 
 void *wrench_allocate(size_t size);
 
-void wrench_deallocate(void *ptr);
+void *wrench_reallocate(void *ptr, size_t size);
+
+void wrench_free(void *ptr);
 
 
 #endif

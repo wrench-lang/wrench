@@ -4,8 +4,15 @@ alias('list', 'l')
 
 fn('move', [<Player player, Int speed> : Void
     try(
-        [ret(update(player, l(x), add, speed))],
-        [<err> print(err)]
+        [ret(update(player, add, l(x), speed))],
+        [<Error err> print(err)]
     )
 ])
 
+dispatch(Player, new, [<Symbol sym, Hash values>: Player
+    hello()
+
+    return(super(sym, values))
+])
+
+move(new(Player, #(hp: 10, pos: #(x: 92, y: 23))), 12)

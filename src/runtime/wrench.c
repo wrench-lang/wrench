@@ -1,8 +1,11 @@
+#include <locale.h>
 #include "memory.h"
 
 
 void wrench_init(void)
 {
+    setlocale(LC_ALL, "");
+
     memory_init();
 }
 

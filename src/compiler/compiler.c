@@ -3,9 +3,10 @@
 #include "compiler.h"
 #include "token_stream.h"
 #include "parser.h"
+#include "generator.h"
 
 
-static void compile_file(const char *path)
+void compile_file(const char *path)
 {
     FILE *file = fopen(path, "r");
     if (!file) {
@@ -20,21 +21,24 @@ static void compile_file(const char *path)
         token = token_stream_next(stream);
 
         if (T_EOF == token.type) {
-            // TODO validate EOF
             break;
         }
 
         parsed_file_append(parsed, &token);
     }
+    generate_file(parsed, "./wrench-build/test.c");
+
+    token_stream_free(stream);
+    parsed_file_free(parsed);
 
     fclose(file);
 }
 
-void compile(const char* path)
+void compile_entry(const char* entry)
 {
     wrench_init();
 
-    compile_file(path);
+    compile_file(entry);
 
     wrench_deinit();
 }

@@ -4,17 +4,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "memory.h"
+#include "symbol.h"
 
 
 #define wrench_fatalf(msg, ...)                                     \
     do {                                                            \
-        fprintf(stderr, "\n \x1B[31m"msg"\x1B[0m \n", __VA_ARGS__); wrench_deinit(); exit(0);\
+        fprintf(stderr, "\x1B[31m"msg"\x1B[0m \n", __VA_ARGS__); wrench_deinit(); exit(0);\
     } while (0)
 
 
 #define wrench_fatal(msg)                                           \
     do {                                                            \
-        fprintf(stderr, "\n \x1B[31m"msg"\x1B[0m \n"); wrench_deinit(); exit(0);             \
+        fprintf(stderr, "\x1B[31m"msg"\x1B[0m \n"); wrench_deinit(); exit(0);             \
     } while (0)
 
 

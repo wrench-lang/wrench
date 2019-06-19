@@ -5,7 +5,7 @@ CFLAGS += -std=c11 -Wall -Wextra -Wconversion -pedantic -ftrapv -Wshadow -Wundef
 ifdef NODEBUG
 	CFLAGS += -O1 -Os -s
 else
-	CFLAGS += -ggdb -fsanitize=address -fsanitize=leak -fno-omit-frame-pointer
+	CFLAGS += -ggdb -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 ifdef USE_MALLOC
@@ -14,11 +14,11 @@ endif
 
 
 CFLAGS += -I ./src
-CFLAGS_RUNTIME += $(CFLAGS) -I ./deps/map/src -I ./deps/mem-pool/include
+CFLAGS_RUNTIME += $(CFLAGS) -isystem ./deps/map/src -I ./deps/mem-pool/include
 CFLAGS_COMPILER = $(CFLAGS)
 CFLAGS_TEST = $(CFLAGS) $(CFLAGS_RUNTIME) -I . -I ./deps/ctest
 
-SRC_RUNTIME = $(shell find src/runtime -name "*.c") $(shell find deps/mem-pool/src -name "*.c")
+SRC_RUNTIME = $(shell find src/runtime -name "*.c") $(shell find deps/mem-pool/src -name "*.c") $(shell find deps/map/src -name "*.c") 
 SRC_COMPILER = $(shell find src/compiler -name "*.c")
 TEST_SRC = $(shell find test -name "*.c") $(SRC_RUNTIME) $(shell find src/compiler -name "*.c" -not -name "main.c")
 
@@ -73,7 +73,7 @@ $(TARGET_COMPILER): $(OBJECTS_COMPILER)
 	$(CC) $(CFLAGS_COMPILER)  -o $(FULL_NAME_COMPILER) $(OBJECTS_COMPILER) $(DEPS_COMPILER)
 
 
-$(TEST_TARGET): install-runtime install-compiler $(TEST_OBJECTS)
+$(TEST_TARGET): install-runtime $(TEST_OBJECTS)
 	$(CC) $(CFLAGS_TEST) $(TEST_OBJECTS) -o $@
 
 clean:

@@ -4,3 +4,6 @@
 [submodule "deps/ctest"]
 	path = deps/ctest
 	url = https://github.com/Isty001/ctest
+[submodule "deps/map"]
+	path = deps/map
+	url = https://github.com/rxi/map

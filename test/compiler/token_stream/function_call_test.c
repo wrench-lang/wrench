@@ -1,4 +1,4 @@
-#include "test.h"
+#include "../../test.h"
 #include "../src/compiler/token_stream.h"
 
 

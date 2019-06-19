@@ -9,8 +9,6 @@ int main(int argc, const char **argv)
 {
     memory_init();
 
-    setlocale(LC_ALL, "");
-
     int code = ctest_main(argc, argv);
 
     memory_deinit();

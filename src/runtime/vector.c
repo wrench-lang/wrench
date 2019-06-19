@@ -1,9 +1,8 @@
 #include <string.h>
-#include "./include/vector.h"
+#include "include/vector.h"
 
-#include <stdio.h>
 
-int wrench_vec_assure_size(char **data, uint32_t *length, uint32_t *capacity, size_t elem_size)
+int vec_assure_size(char **data, uint32_t *length, uint32_t *capacity, size_t elem_size)
 {
     if (*length + 1 <= *capacity) {
         return 0;
@@ -16,7 +15,7 @@ int wrench_vec_assure_size(char **data, uint32_t *length, uint32_t *capacity, si
 
     if (*data) {
         memmove(new, *data, *capacity * elem_size);
-        wrench_deallocate(*data);
+        wrench_free(*data);
     }
 
     *data = new;

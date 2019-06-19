@@ -1,4 +1,4 @@
-#ifndef WRENCH
+#ifndef WRENCH_TEST
 #define WRENCH_TEST value
 
 
