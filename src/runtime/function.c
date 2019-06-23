@@ -5,7 +5,7 @@
 
 typedef struct {
     uint8_t param_num;
-    const WrenchValue *param_types;
+    const WrenchValue *PARAM_TYPE_s;
     WrenchType return_type;
     WrenchFunctionPtr ptr;
 } Function;
@@ -19,7 +19,7 @@ void wrench_sym_add_function
 (
     const char *name,
     uint8_t param_num,
-    const WrenchValue *param_types,
+    const WrenchValue *PARAM_TYPE_s,
     WrenchType return_type,
     WrenchFunctionPtr ptr
 )
@@ -32,8 +32,8 @@ void wrench_sym_add_function
     fn->return_type = return_type;
     fn->param_num = param_num;
     fn->ptr = ptr;
-    fn->param_types = wrench_allocate(param_num * sizeof(WrenchValue));
-    memmove((void *) fn->param_types, param_types, param_num * sizeof(WrenchValue));
+    fn->PARAM_TYPE_s = wrench_allocate(param_num * sizeof(WrenchValue));
+    memmove((void *) fn->PARAM_TYPE_s, PARAM_TYPE_s, param_num * sizeof(WrenchValue));
 
     map_set(FUNCTION_MAP, name, fn);
 }

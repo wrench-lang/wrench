@@ -15,9 +15,18 @@ static void copy_token_value(wchar_t **dest, const Token *token)
 
 static inline FunctionCall *current_function_call(const ParsedFile *file)
 {
-    if (0 == file->function_stack->length) return NULL;
+    if (0 == file->function_stack.length) return NULL;
 
-    return &vec_last(file->function_stack);
+    return &vec_last(&file->function_stack);
+}
+
+static inline FunctionParam *current_param(const ParsedFile *file)
+{
+    const FunctionCall *call = current_function_call(file);
+
+    if (!call) return NULL;
+
+    return &vec_last(&call->params);
 }
 
 static void add_new_parsing_function(ParsedFile *file, const Token *token)
@@ -33,7 +42,7 @@ static void add_new_parsing_function(ParsedFile *file, const Token *token)
 
     copy_token_value(&call.name, token);
 
-    vec_push(file->function_stack, call);
+    vec_push(&file->function_stack, call);
 }
 
 static bool meets_expectations(const ParsedFile *file, const Token *token)
@@ -42,6 +51,7 @@ static bool meets_expectations(const ParsedFile *file, const Token *token)
     uint32_t i;
 
     vec_foreach(&file->expectations, type, i) {
+        /* printf("tok: %d exp: %d\n", token->type, type); */
         if (type == token->type) {
             return true;
         }
@@ -50,17 +60,19 @@ static bool meets_expectations(const ParsedFile *file, const Token *token)
     return false;
 }
 
-static void create_param_function_call(ParsedFile *file, FunctionCall *call)
+static void add_new_function_call_param(ParsedFile *file, FunctionCall *call)
 {
-    FunctionParam *prev_param = &vec_last(&call->params);
-    prev_param->type = FN_PARAM_FUNCTION_CALL;
+    if (0 != call->params.length) {
+        FunctionParam *prev_param = &vec_last(&call->params);
+        prev_param->type = PARAM_TYPE_FUNCTION_CALL;
 
-    add_new_parsing_function(file, &file->prev);
-    wrench_free(prev_param->val.str);
+        add_new_parsing_function(file, &file->prev);
+        wrench_free(prev_param->val.str);
 
-    FunctionCall *new = current_function_call(file);
-    new->ctx.param_list = true;
-    prev_param->val.fn_call = *new;
+        FunctionCall *new = current_function_call(file);
+        new->ctx.param_list = true;
+        prev_param->val.fn_call = *new;
+    }
 }
 
 static void change_closure_context(ParsedFile *file, const Token *token)
@@ -78,43 +90,42 @@ static void change_closure_context(ParsedFile *file, const Token *token)
     }
 }
 
+static void add_new_closure_function_call(ParsedFile *file, const Token *token)
+{
+    FunctionParam *containing_param = current_param(file);
+
+    add_new_parsing_function(file, token);
+
+    vec_push(&containing_param->val.closure.fn_calls, *current_function_call(file));
+}
+
 static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, const Token *token)
 {
-    FunctionParam param;
+    FunctionParam new_param;
 
     switch (token->type) {
         case T_STRING:
-            param.type = FN_PARAM_STRING;
-            break;
         case T_SYMBOL:
-            param.type = FN_PARAM_SYMBOL;
+            new_param.type = T_STRING == token->type ? PARAM_TYPE_STRING : PARAM_TYPE_SYMBOL;
+
+            if (!call->ctx.closure_body && !call->ctx.closure_param_list) {
+                copy_token_value(&new_param.val.str, token);
+                vec_push(&call->params, new_param);
+            }
             break;
         case T_PAREN_LEFT:
             if (T_SYMBOL == file->prev.type) {
                 if (call->ctx.closure_body) {
-                    add_new_parsing_function(file, &file->prev);
+                    add_new_closure_function_call(file, &file->prev);
                 } else {
-                    create_param_function_call(file, call);
+                    add_new_function_call_param(file, call);
                 }
             }
-            param.type = FN_PARAM_SYMBOL;
             break;
         case T_SQUARE_LEFT:
-            param.type = FN_PARAM_CLOSURE;
-            break;
-    }
-
-    switch (token->type) {
-        case T_STRING:
-        case T_SYMBOL:
-            if (!call->ctx.closure_body && !call->ctx.closure_param_list) {
-                copy_token_value(&param.val.str, token);
-                vec_push(&call->params, param);
-            }
-             // TODO add fn call to closure
-            break;
-        case T_SQUARE_LEFT:
-            /* vec_init(&param.val.closure.fn_calls); */
+            new_param.type = PARAM_TYPE_CLOSURE;
+            vec_init(&new_param.val.closure.fn_calls);
+            vec_push(&call->params, new_param);
             break;
     }
 }
@@ -124,20 +135,18 @@ static void apply_token(ParsedFile *file, const Token *token)
     FunctionCall *call = current_function_call(file);
     TokenType type = token->type;
 
-    if (T_PAREN_LEFT == type && !call->ctx.param_list) {
+    if (T_PAREN_LEFT == type) {
         call->ctx.param_list = true;
-        return;
     }
 
-    if (T_PAREN_RIGHT == type && call->ctx.param_list) {
+    if (T_PAREN_RIGHT == type) {
         call->ctx.param_list = false;
 
-        FunctionCall top = vec_pop(file->function_stack);
+        FunctionCall top = vec_pop(&file->function_stack);
 
-        if (0 == file->function_stack->length) {
-            vec_push(file->fn_calls, top);
+        if (0 == file->function_stack.length) {
+            vec_push(&file->fn_calls, top);
         }
-        return;
     }
 
     if (call->ctx.param_list) {
@@ -146,15 +155,11 @@ static void apply_token(ParsedFile *file, const Token *token)
 }
 
 
-static bool in_closure_param(const ParsedFile *file)
+static bool in_closure_body(const ParsedFile *file)
 {
-    const FunctionCallVec *stack = file->function_stack;
+    const FunctionCall *call = current_function_call(file);
 
-    if (2 > stack->length) return false;
-
-    const FunctionCall *prev_call = &stack->data[stack->length -2];
-
-    return prev_call->ctx.closure_body;
+    return call->ctx.closure_body;
 }
 
 #define add_expectations(vec, count, ...) \
@@ -201,8 +206,7 @@ static void set_expectation(ParsedFile *file, const Token *token)
             add_expectations(expectations, 2, {T_STRING, T_SYMBOL});
             break;
         case T_PAREN_RIGHT:
-            if (in_closure_param(file)) {
-                /* exit(0); */
+            if (in_closure_body(file)) {
                 add_expectations(expectations, 2, {T_SYMBOL, T_SQUARE_RIGHT});
             } else {
                 add_expectations(expectations, 2, {T_PAREN_RIGHT, T_COMMA});
@@ -235,7 +239,7 @@ static void add_first_call(ParsedFile *file, const Token *token)
 
 ParserStatus parsed_file_append(ParsedFile *file, const Token *token)
 {
-    FunctionCallVec *function_stack = file->function_stack;
+    FunctionCallVec *function_stack = &file->function_stack;
 
     if (0 != function_stack->length) {
          if (!meets_expectations(file, token)) {
@@ -261,16 +265,15 @@ ParsedFile *parsed_file_new(void)
 {
     ParsedFile *file = wrench_allocate(sizeof(ParsedFile));
     file->prev = (Token) {.type = T_EOF};
-    file->function_stack = wrench_allocate(sizeof(FunctionCallVec));
 
-    vec_init(file->function_stack);
+    vec_init(&file->function_stack);
     vec_init(&file->expectations);
-
-    file->fn_calls = wrench_allocate(sizeof(FunctionCallVec));
-    vec_init(file->fn_calls);
+    vec_init(&file->fn_calls);
 
     return file;
 }
+
+static void free_function_calls(FunctionCallVec *calls);
 
 static void free_function_call(const FunctionCall *call)
 {
@@ -279,11 +282,15 @@ static void free_function_call(const FunctionCall *call)
 
     vec_foreach(&call->params, param, i) {
         switch (param.type) {
-            case FN_PARAM_FUNCTION_CALL:
+            case PARAM_TYPE_FUNCTION_CALL:
                 free_function_call(&param.val.fn_call);
                 break;
-            case FN_PARAM_STRING:
+            case PARAM_TYPE_STRING:
                 wrench_free(param.val.str);
+                break;
+            case PARAM_TYPE_CLOSURE:
+                free_function_calls(&param.val.closure.fn_calls);
+                vec_deinit(&param.val.closure.fn_calls);
                 break;
         }
     }
@@ -292,28 +299,25 @@ static void free_function_call(const FunctionCall *call)
     wrench_free(call->name);
 }
 
+static void free_function_calls(FunctionCallVec *calls)
+{
+    uint32_t i;
+    FunctionCall call;
+
+    vec_foreach(calls, call, i) {
+        free_function_call(&call);
+    }
+}
+
 void parsed_file_free(ParsedFile *file)
 {
     token_free(file->prev);
 
-    uint32_t i;
-    FunctionCall call;
+    free_function_calls(&file->fn_calls);
 
-    vec_foreach(file->fn_calls, call, i) {
-        free_function_call(&call);
-    }
-
-    vec_deinit(file->fn_calls);
-    wrench_free(file->fn_calls);
-
-    vec_foreach(file->function_stack, call, i) {
-        free_function_call(&call);
-    }
-
+    vec_deinit(&file->fn_calls);
     vec_deinit(&file->expectations);
-
-    vec_deinit(file->function_stack);
-    wrench_free(file->function_stack);
+    vec_deinit(&file->function_stack);
 
     wrench_free(file);
 }

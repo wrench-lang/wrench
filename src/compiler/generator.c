@@ -32,7 +32,7 @@ void generate_file(const ParsedFile *parsed, const char *target)
     fprintf(file, "%s", "#include <wrench/wrench.h>\n");;
     fprintf(file, "void entry_%d(void) {\n", ENTITY_ID++);
 
-    vec_foreach(parsed->fn_calls, fn_call, i) {
+    vec_foreach(&parsed->fn_calls, fn_call, i) {
         call_str = call_to_string(&fn_call);
         fprintf(file, "%s", call_str);
         wrench_free(call_str);

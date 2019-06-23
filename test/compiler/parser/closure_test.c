@@ -13,15 +13,17 @@ CTEST(parser, closure)
     Token token = token_stream_next(stream);
 
     while (token.value.data) {
-        /* printf("%ls\n", token.value.data); */
         ASSERT_EQUAL(PARSER_OK, parsed_file_append(file, &token));
         token = token_stream_next(stream);
     }
 
-    /* ASSERT_EQUAL(1, file->fn_calls->length); */
-    /* const FunctionCall call = file->fn_calls->data[0]; */
+    ASSERT_EQUAL(1, file->fn_calls.length);
+    const FunctionCall call = file->fn_calls.data[0];
 
-    /* ASSERT_EQUAL(FN_PARAM_CLOSURE); */
+    ASSERT_EQUAL(1, call.params.length);
+    const FunctionParam param = call.params.data[0];
+
+    ASSERT_EQUAL(PARAM_TYPE_CLOSURE, param.type);
 
     parsed_file_free(file);
     token_stream_free(stream);
