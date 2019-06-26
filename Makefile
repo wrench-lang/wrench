@@ -5,7 +5,7 @@ CFLAGS += -std=c11 -Wall -Wextra -Wconversion -pedantic -ftrapv -Wshadow -Wundef
 ifdef NODEBUG
 	CFLAGS += -O1 -Os -s
 else
-	CFLAGS += -ggdb -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer
+	CFLAGS += -ggdb -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer -lasan
 endif
 
 ifdef USE_MALLOC
@@ -46,7 +46,7 @@ OBJECTS_RUNTIME = $(patsubst %.c, $(DIR_BUILD)/runtime/%.o, $(SRC_RUNTIME))
 OBJECTS_COMPILER = $(patsubst %.c, $(DIR_BUILD)/compiler/%.o, $(SRC_COMPILER))
 TEST_OBJECTS = $(patsubst %.c, $(DIR_BUILD)/test/%.o, $(TEST_SRC))
 
-default: install-compiler
+install: install-compiler
 
 -include $(shell find $(DIR_BUILD) -name "*.d")
 
@@ -69,7 +69,7 @@ $(DIR_BUILD)/test/%.o: %.c
 $(TARGET_RUNTIME): $(OBJECTS_RUNTIME)
 	$(CC) $(CFLAGS_RUNTIME) -shared -fpic -Wl,-soname,$(SONAME) -o $(FULL_NAME_RUNTIME) $(OBJECTS_RUNTIME) $(DEPS_RUNTIME)
 
-$(TARGET_COMPILER): $(OBJECTS_COMPILER)
+$(TARGET_COMPILER): install-runtime $(OBJECTS_COMPILER)
 	$(CC) $(CFLAGS_COMPILER)  -o $(FULL_NAME_COMPILER) $(OBJECTS_COMPILER) $(DEPS_COMPILER)
 
 
@@ -87,7 +87,7 @@ install-runtime: $(TARGET_RUNTIME)
 	sudo mkdir -p $(INCLUDE_DIR)
 	sudo cp src/runtime/include/*.h $(INCLUDE_DIR)
 
-install-compiler: install-runtime $(TARGET_COMPILER)
+install-compiler:  $(TARGET_COMPILER)
 	sudo mv $(FULL_NAME_COMPILER) $(BIN_DIR)
 
 test: $(TEST_TARGET)
@@ -96,3 +96,6 @@ test: $(TEST_TARGET)
 test-valgrind: $(TEST_TARGET)
 	valgrind --track-origins=yes --leak-check=full --show-reachable=yes --show-leak-kinds=all --dsymutil=yes --trace-children=yes ./$(TEST_TARGET)
 
+test-docker-debian-latest:
+	docker build -f test/docker/debian/Dockerfile -t wrench-test-debian . \
+	&& docker run --rm -u root wrench-test-debian sh -c 'make clean; make test'
