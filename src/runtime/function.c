@@ -5,9 +5,9 @@
 
 typedef struct {
     uint8_t param_num;
-    const WrenchValue *PARAM_TYPE_s;
+    const WrenchValue *param_types;
     WrenchType return_type;
-    WrenchFunctionPtr ptr;
+    WrenchFunctionPtr *ptr;
 } Function;
 
 typedef map_t(const Function *) FunctionMap;
@@ -15,7 +15,7 @@ typedef map_t(const Function *) FunctionMap;
 static FunctionMap *FUNCTION_MAP;
 
 
-void wrench_sym_add_function
+void wrench_function_add
 (
     const char *name,
     uint8_t param_num,
@@ -32,13 +32,18 @@ void wrench_sym_add_function
     fn->return_type = return_type;
     fn->param_num = param_num;
     fn->ptr = ptr;
-    fn->PARAM_TYPE_s = wrench_allocate(param_num * sizeof(WrenchValue));
-    memmove((void *) fn->PARAM_TYPE_s, PARAM_TYPE_s, param_num * sizeof(WrenchValue));
+    fn->param_types = wrench_allocate(param_num * sizeof(WrenchValue));
+    memmove((void *) fn->param_types, PARAM_TYPE_s, param_num * sizeof(WrenchValue));
 
     map_set(FUNCTION_MAP, name, fn);
 }
 
-WrenchValue wrench_sym_call_function(const char *name, const WrenchValue *params)
+bool wrench_function_exists(const char *name)
+{
+    return NULL != map_get(FUNCTION_MAP, name);
+}
+
+static const Function *get_function(const char *name)
 {
     const Function **fn = map_get(FUNCTION_MAP, name);
 
@@ -46,6 +51,22 @@ WrenchValue wrench_sym_call_function(const char *name, const WrenchValue *params
         wrench_fatalf("Undefined function '%s'", name);
     }
 
-    return (*fn)->ptr(params);
+    return *fn;
+}
+
+WrenchFunctionInfo wrench_function_describe(const char *name)
+{
+    const Function *fn = get_function(name);
+
+    return (WrenchFunctionInfo) {
+        .param_num = fn->param_num,
+        .param_types = fn->param_types,
+        .return_type = fn->return_type
+    };
+}
+
+WrenchValue wrench_function_call(const char *name, const WrenchValue *params)
+{
+    return get_function(name)->ptr(params);
 }
 

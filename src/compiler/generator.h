@@ -5,7 +5,7 @@
 #include "parser.h"
 
 
-void generate_file(const ParsedFile *file, const char *target);
+void generate_file(const ParsedFile *file, const char *target, bool entry);
 
 
 #endif

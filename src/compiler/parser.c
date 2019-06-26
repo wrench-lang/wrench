@@ -100,7 +100,7 @@ static void add_new_closure_function_call(ParsedFile *file, const Token *token)
 
 static void add_new_closure_param(const ParsedFile *file, const Token *token, Closure *closure)
 {
-    ClosureParam param = {0};
+    ClosureParam param;
     copy_token_value(&param.name, token);
 
     const wchar_t *type_name = file->prev.value.data;
@@ -122,8 +122,11 @@ static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, cons
 
     switch (token->type) {
         case T_STRING:
+            new_param.type = PARAM_TYPE_STRING;
+            copy_token_value(&new_param.val.str, token);
+            vec_push(&call->params, new_param);
+            break;
         case T_SYMBOL:
-            new_param.type = T_STRING == token->type ? PARAM_TYPE_STRING : PARAM_TYPE_SYMBOL;
 
             if (!call->ctx.closure_body && !call->ctx.closure_param_list) {
                 copy_token_value(&new_param.val.str, token);

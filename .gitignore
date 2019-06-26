@@ -6,6 +6,7 @@ tags
 build/
 !build/.gitkeep
 
+a.out
 *.o
 *.so*
 

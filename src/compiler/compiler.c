@@ -26,7 +26,7 @@ void compile_file(const char *path)
 
         parsed_file_append(parsed, &token);
     }
-    generate_file(parsed, "./wrench-build/test.c");
+    generate_file(parsed, "./wrench-build/test.c", true);
 
     token_stream_free(stream);
     parsed_file_free(parsed);
