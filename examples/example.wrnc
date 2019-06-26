@@ -2,7 +2,7 @@ import('player')
 
 alias('list', 'l')
 
-fn('move', [<Player player, Int speed> : Void
+def('move', [<Player player, Int speed> : Void
     try(
         [ret(update(player, add, l(x), speed))],
         [<Error err> print(err)]

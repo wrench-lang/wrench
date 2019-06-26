@@ -51,7 +51,6 @@ static bool meets_expectations(const ParsedFile *file, const Token *token)
     uint32_t i;
 
     vec_foreach(&file->expectations, type, i) {
-        /* printf("tok: %d exp: %d\n", token->type, type); */
         if (type == token->type) {
             return true;
         }
@@ -99,6 +98,24 @@ static void add_new_closure_function_call(ParsedFile *file, const Token *token)
     vec_push(&containing_param->val.closure.fn_calls, *current_function_call(file));
 }
 
+static void add_new_closure_param(const ParsedFile *file, const Token *token, Closure *closure)
+{
+    ClosureParam param = {0};
+    copy_token_value(&param.name, token);
+
+    const wchar_t *type_name = file->prev.value.data;
+
+    if (0 == wcscmp(L"Int", type_name)) {
+        param.type = PARAM_TYPE_INT;
+    } else if (0 == wcscmp(L"String", type_name)) {
+        param.type = PARAM_TYPE_STRING;
+    } else {
+        // TODO Custom type check
+    }
+
+    vec_push(&closure->params, param);
+}
+
 static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, const Token *token)
 {
     FunctionParam new_param;
@@ -111,6 +128,10 @@ static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, cons
             if (!call->ctx.closure_body && !call->ctx.closure_param_list) {
                 copy_token_value(&new_param.val.str, token);
                 vec_push(&call->params, new_param);
+            } else if (call->ctx.closure_param_list && T_SYMBOL == file->prev.type) {
+                Closure *closure = &vec_last(&call->params).val.closure;
+
+                add_new_closure_param(file, token, closure);
             }
             break;
         case T_PAREN_LEFT:
@@ -124,6 +145,7 @@ static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, cons
             break;
         case T_SQUARE_LEFT:
             new_param.type = PARAM_TYPE_CLOSURE;
+            vec_init(&new_param.val.closure.params);
             vec_init(&new_param.val.closure.fn_calls);
             vec_push(&call->params, new_param);
             break;
@@ -152,14 +174,6 @@ static void apply_token(ParsedFile *file, const Token *token)
     if (call->ctx.param_list) {
         apply_token_to_param_list(file, call, token);
     }
-}
-
-
-static bool in_closure_body(const ParsedFile *file)
-{
-    const FunctionCall *call = current_function_call(file);
-
-    return call->ctx.closure_body;
 }
 
 #define add_expectations(vec, count, ...) \
@@ -206,7 +220,7 @@ static void set_expectation(ParsedFile *file, const Token *token)
             add_expectations(expectations, 2, {T_STRING, T_SYMBOL});
             break;
         case T_PAREN_RIGHT:
-            if (in_closure_body(file)) {
+            if (call->ctx.closure_body) {
                 add_expectations(expectations, 2, {T_SYMBOL, T_SQUARE_RIGHT});
             } else {
                 add_expectations(expectations, 2, {T_PAREN_RIGHT, T_COMMA});
@@ -275,22 +289,35 @@ ParsedFile *parsed_file_new(void)
 
 static void free_function_calls(FunctionCallVec *calls);
 
+static void free_closure(Closure *closure)
+{
+    free_function_calls(&closure->fn_calls);
+    vec_deinit(&closure->fn_calls);
+
+    uint32_t i;
+    ClosureParam current_param;
+    vec_foreach(&closure->params, current_param, i) {
+        wrench_free(current_param.name);
+    }
+
+    vec_deinit(&closure->params);
+}
+
 static void free_function_call(const FunctionCall *call)
 {
     uint32_t i;
-    FunctionParam param;
+    FunctionParam current;
 
-    vec_foreach(&call->params, param, i) {
-        switch (param.type) {
+    vec_foreach(&call->params, current, i) {
+        switch (current.type) {
             case PARAM_TYPE_FUNCTION_CALL:
-                free_function_call(&param.val.fn_call);
+                free_function_call(&current.val.fn_call);
                 break;
             case PARAM_TYPE_STRING:
-                wrench_free(param.val.str);
+                wrench_free(current.val.str);
                 break;
             case PARAM_TYPE_CLOSURE:
-                free_function_calls(&param.val.closure.fn_calls);
-                vec_deinit(&param.val.closure.fn_calls);
+                free_closure(&current.val.closure);
                 break;
         }
     }

@@ -9,6 +9,7 @@
 
 typedef enum {
     PARAM_TYPE_STRING,
+    PARAM_TYPE_INT,
     PARAM_TYPE_SYMBOL,
     PARAM_TYPE_FUNCTION_CALL,
     PARAM_TYPE_CLOSURE
@@ -35,6 +36,14 @@ struct FunctionCall {
 };
 
 typedef struct {
+    ParamType type;
+    wchar_t *name;
+} ClosureParam;
+
+typedef vec_type(ClosureParam) ClosureParamVec;
+
+typedef struct {
+    ClosureParamVec params;
     FunctionCallVec fn_calls;
 } Closure;
 

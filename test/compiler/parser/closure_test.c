@@ -25,6 +25,18 @@ CTEST(parser, closure)
 
     ASSERT_EQUAL(PARAM_TYPE_CLOSURE, param.type);
 
+    const Closure closure = param.val.closure;
+    ASSERT_EQUAL(1, closure.fn_calls.length);
+    ASSERT_EQUAL(1, closure.params.length);
+
+    ClosureParam closure_param = closure.params.data[0];
+    ASSERT_WSTR(L"argc", closure_param.name);
+    ASSERT_EQUAL(PARAM_TYPE_INT, closure_param.type);
+
+    const FunctionCall inner_call = closure.fn_calls.data[0];
+    ASSERT_EQUAL(0, inner_call.params.length);
+    ASSERT_WSTR(L"hello", inner_call.name);
+
     parsed_file_free(file);
     token_stream_free(stream);
 }
