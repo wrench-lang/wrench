@@ -1,0 +1,8 @@
+version: 2
+jobs:
+  build:
+    steps:
+      - checkout
+      - run:
+          name: Test debian:latest + GCC
+          command: make test-docker-latest-debian--gcc

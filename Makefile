@@ -96,6 +96,6 @@ test: $(TEST_TARGET)
 test-valgrind: $(TEST_TARGET)
 	valgrind --track-origins=yes --leak-check=full --show-reachable=yes --show-leak-kinds=all --dsymutil=yes --trace-children=yes ./$(TEST_TARGET)
 
-test-docker-debian-latest:
+test-docker-latest-debian--gcc:
 	docker build -f test/docker/debian/Dockerfile -t wrench-test-debian . \
-	&& docker run --rm -u root wrench-test-debian sh -c 'make clean; make test'
+	&& docker run -e CC=gcc --rm -u root wrench-test-debian sh -c 'make clean; make test'
