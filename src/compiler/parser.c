@@ -6,11 +6,13 @@
 
 static void copy_token_value(wchar_t **dest, const Token *token)
 {
-    size_t size = token->value.length * sizeof(wchar_t);
+    size_t size = (token->value.length + 1) * sizeof(wchar_t);
+    uint32_t length = token->value.length;
 
-    *dest = wrench_allocate(size + sizeof(wchar_t));
+    *dest = wrench_allocate(size);
 
-    wcsncpy(*dest, token->value.data, token->value.length);
+    wcsncpy(*dest, token->value.data, length);
+    (*dest)[length] = '\0';
 }
 
 static inline FunctionCall *current_function_call(const ParsedFile *file)
