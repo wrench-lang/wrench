@@ -98,4 +98,4 @@ test-valgrind: $(TEST_TARGET)
 
 make test-docker-latest-debian-gcc:
 	docker build -f test/docker/debian/Dockerfile -t wrench-test-debian . \
-	&& docker run -e CC=gcc --rm -u root wrench-test-debian sh -c 'make clean; make test'
+	&& docker run -e CC=gcc --rm -u root wrench-test-debian sh -c 'make clean; make test; make clean; USE_MALLOC=1 make test'
