@@ -8,7 +8,11 @@ static VariableMemPool *COMMON_POOL;
 
 void memory_init(void)
 {
-    pool_variable_init(&COMMON_POOL, 1000, 5);
+    MemPoolError err = pool_variable_init(&COMMON_POOL, 1000, 5);
+
+    if (MEM_POOL_ERR_OK != err) {
+        wrench_fatal("Unable to initialize Variablepool");
+    }
 }
 
 void memory_deinit(void)

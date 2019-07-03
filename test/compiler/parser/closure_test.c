@@ -23,7 +23,7 @@ CTEST(parser, closure)
     ASSERT_EQUAL(1, call.params.length);
     const FunctionParam param = call.params.data[0];
 
-    ASSERT_EQUAL(PARAM_TYPE_CLOSURE, param.type);
+    ASSERT_EQUAL(FN_CALL_PARAM_TYPE_CLOSURE, param.type);
 
     const Closure closure = param.val.closure;
     ASSERT_EQUAL(1, closure.fn_calls.length);
@@ -31,7 +31,7 @@ CTEST(parser, closure)
 
     ClosureParam closure_param = closure.params.data[0];
     ASSERT_WSTR(L"argc", closure_param.name);
-    ASSERT_EQUAL(PARAM_TYPE_INT, closure_param.type);
+    ASSERT_EQUAL(FN_CALL_PARAM_TYPE_INT, closure_param.type);
 
     const FunctionCall inner_call = closure.fn_calls.data[0];
     ASSERT_EQUAL(0, inner_call.params.length);

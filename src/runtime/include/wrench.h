@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "memory.h"
 #include "function.h"
+#include "value.h"
 
 
 #define WRENCH_NEW_LINE "\n"

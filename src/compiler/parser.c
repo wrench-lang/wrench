@@ -65,7 +65,7 @@ static void add_new_function_call_param(ParsedFile *file, FunctionCall *call)
 {
     if (0 != call->params.length) {
         FunctionParam *prev_param = &vec_last(&call->params);
-        prev_param->type = PARAM_TYPE_FUNCTION_CALL;
+        prev_param->type = FN_CALL_PARAM_TYPE_FUNCTION_CALL;
 
         add_new_parsing_function(file, &file->prev);
         wrench_free(prev_param->val.str);
@@ -108,9 +108,9 @@ static void add_new_closure_param(const ParsedFile *file, const Token *token, Cl
     const wchar_t *type_name = file->prev.value.data;
 
     if (0 == wcscmp(L"Int", type_name)) {
-        param.type = PARAM_TYPE_INT;
+        param.type = FN_CALL_PARAM_TYPE_INT;
     } else if (0 == wcscmp(L"String", type_name)) {
-        param.type = PARAM_TYPE_STRING;
+        param.type = FN_CALL_PARAM_TYPE_STRING;
     } else {
         // TODO Custom type check
     }
@@ -124,7 +124,7 @@ static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, cons
 
     switch (token->type) {
         case T_STRING:
-            new_param.type = PARAM_TYPE_STRING;
+            new_param.type = FN_CALL_PARAM_TYPE_STRING;
             copy_token_value(&new_param.val.str, token);
             vec_push(&call->params, new_param);
             break;
@@ -149,7 +149,7 @@ static void apply_token_to_param_list(ParsedFile *file, FunctionCall *call, cons
             }
             break;
         case T_SQUARE_LEFT:
-            new_param.type = PARAM_TYPE_CLOSURE;
+            new_param.type = FN_CALL_PARAM_TYPE_CLOSURE;
             vec_init(&new_param.val.closure.params);
             vec_init(&new_param.val.closure.fn_calls);
             vec_push(&call->params, new_param);
@@ -315,13 +315,13 @@ static void free_function_call(const FunctionCall *call)
 
     vec_foreach(&call->params, current, i) {
         switch (current.type) {
-            case PARAM_TYPE_FUNCTION_CALL:
+            case FN_CALL_PARAM_TYPE_FUNCTION_CALL:
                 free_function_call(&current.val.fn_call);
                 break;
-            case PARAM_TYPE_STRING:
+            case FN_CALL_PARAM_TYPE_STRING:
                 wrench_free(current.val.str);
                 break;
-            case PARAM_TYPE_CLOSURE:
+            case FN_CALL_PARAM_TYPE_CLOSURE:
                 free_closure(&current.val.closure);
                 break;
         }

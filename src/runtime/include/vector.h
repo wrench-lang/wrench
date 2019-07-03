@@ -1,5 +1,5 @@
-#ifndef WRENCH_VECTOR
-#define WRENCH_VECTOR 1
+#ifndef WRENCH_INTERFACE_VECTOR
+#define WRENCH_INTERFACE_VECTOR 1
 
 
 // Based on https://github.com/rxi/vec

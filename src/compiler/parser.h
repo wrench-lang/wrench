@@ -8,12 +8,12 @@
 
 
 typedef enum {
-    PARAM_TYPE_STRING,
-    PARAM_TYPE_INT,
-    PARAM_TYPE_SYMBOL,
-    PARAM_TYPE_FUNCTION_CALL,
-    PARAM_TYPE_CLOSURE
-} ParamType;
+    FN_CALL_PARAM_TYPE_STRING,
+    FN_CALL_PARAM_TYPE_INT,
+    FN_CALL_PARAM_TYPE_SYMBOL,
+    FN_CALL_PARAM_TYPE_FUNCTION_CALL,
+    FN_CALL_PARAM_TYPE_CLOSURE
+} FnCallParamType;
 
 typedef vec_type(TokenType) TokenTypeVec;
 
@@ -36,7 +36,7 @@ struct FunctionCall {
 };
 
 typedef struct {
-    ParamType type;
+    FnCallParamType type;
     wchar_t *name;
 } ClosureParam;
 
@@ -48,7 +48,7 @@ typedef struct {
 } Closure;
 
 struct FunctionParam {
-    ParamType type;
+    FnCallParamType type;
     union {
         FunctionCall fn_call;
         wchar_t *str;

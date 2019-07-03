@@ -78,10 +78,10 @@ CTEST(parser, function_call)
     ASSERT_WSTR(L"print", call.name);
     ASSERT_EQUAL(2, call.params.length);
 
-    ASSERT_EQUAL(PARAM_TYPE_STRING, call.params.data[0].type);
+    ASSERT_EQUAL(FN_CALL_PARAM_TYPE_STRING, call.params.data[0].type);
     ASSERT_WSTR(L"'Hello'", call.params.data[0].val.str);
 
-    ASSERT_EQUAL(PARAM_TYPE_FUNCTION_CALL, call.params.data[1].type);
+    ASSERT_EQUAL(FN_CALL_PARAM_TYPE_FUNCTION_CALL, call.params.data[1].type);
     ASSERT_WSTR(L"test", call.params.data[1].val.str);
 
     parsed_file_free(file);
