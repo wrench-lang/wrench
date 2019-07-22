@@ -4,19 +4,9 @@
 #include <argparse.h>
 #include "cli.h"
 
-#if defined(__APPLE__)
-
-#include <sys/syslimits.h>
-
-#elif defined(__linux__)
-
-#include <linux/limits.h>
-
-#endif
-
 
 static char *CC = "cc";
-static char BUILD_DIR[PATH_MAX] = "./wrench-build";
+static char *BUILD_DIR = "./wrench-build";
 static char *ENTRY_FILE  = NULL;
 static int NO_DEBUG = 0;
 

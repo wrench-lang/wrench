@@ -13,6 +13,17 @@
 #define DEBUG_FLAGS "-ggdb -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer -lasan"
 
 
+
+#if defined(__APPLE__)
+
+#include <sys/syslimits.h>
+
+#elif defined(__linux__)
+
+#include <linux/limits.h>
+
+#endif
+
 static FILE *objects;
 
 
@@ -26,12 +37,12 @@ static int execute_compiler_command(
     bool is_debug = cli_is_debug();
 
     char command[
-         strlen(COMMAND_FORMAT)
-        + strlen(cc)
-        + strlen(source)
-        + strlen(cflags)
-        + strlen(target)
-        + (is_debug ? strlen(DEBUG_FLAGS) : 0)
+         strnlen(COMMAND_FORMAT, 50)
+        + strnlen(cc, 3)
+        + strnlen(source, PATH_MAX)
+        + strnlen(cflags, 200)
+        + strnlen(target, PATH_MAX)
+        + (is_debug ? strnlen(DEBUG_FLAGS, 100) : 0)
         + 1
     ];
 
@@ -54,7 +65,7 @@ static int execute_compiler_command(
 
 static bool is_c_source(const char *path, int type)
 {
-    size_t len = strlen(path);
+    size_t len = strnlen(path, PATH_MAX);
 
     return FTW_F == type
         && 'c' == path[len - 1]
@@ -67,7 +78,7 @@ static int compile_file(const char *source,const struct stat* stat, int type)
 
     if (!is_c_source(source, type)) return 0;
 
-    const size_t source_len = strlen(source) + 1;
+    const size_t source_len = strnlen(source, PATH_MAX) + 1;
     char target[source_len];
 
     memcpy(target, source, source_len);
