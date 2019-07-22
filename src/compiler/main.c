@@ -1,5 +1,9 @@
-#include <sys/stat.h>
+#include <wrench/wrench.h>
+#include "cli.h"
+#include "transpiler.h"
 #include "compiler.h"
+
+#include <ftw.h>
 
 
 static void create_build_dir(const char *dir)
@@ -12,9 +16,16 @@ static void create_build_dir(const char *dir)
     }
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char **argv)
 {
+    wrench_init();
+
+    cli_load(argc, argv);
+
     create_build_dir("./wrench-build");
 
-    compile_entry(argv[1]);
+    transpile(cli_get_file());
+    compile();
+
+    wrench_deinit();
 }

@@ -2,19 +2,16 @@
 
 #include <locale.h>
 #include <ctest.h>
-#include "../src/runtime/memory.h"
-#include "../src/runtime/function.h"
+#include "../src/runtime/include/wrench.h"
 
 
 int main(int argc, const char **argv)
 {
-    memory_init();
-    wrench_funtion_init();
+    wrench_init();
 
     int code = ctest_main(argc, argv);
 
-    wrench_funtion_deinit();
-    memory_deinit();
+    wrench_deinit();
 
     return code;
 }

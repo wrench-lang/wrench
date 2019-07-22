@@ -72,7 +72,7 @@ const WrenchValue *wrench_function_call(const char *name, const WrenchValue **pa
     const Function *fn = get_function(name);
     const WrenchValue *ret = fn->ptr(params);
 
-    /** Needed for Extension functions written in C because its impossible to tell the return type at compile time */
+    /** Needed for Extension functions written in C because its impossible to tell if the return type is correct at compile time */
     if (wrench_valu_typeof(ret) != fn->info.return_type) {
         // TODO throw exception
     }

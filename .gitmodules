@@ -7,3 +7,6 @@
 [submodule "deps/map"]
 	path = deps/map
 	url = https://github.com/rxi/map
+[submodule "deps/argparse"]
+	path = deps/argparse
+	url = https://github.com/cofyc/argparse

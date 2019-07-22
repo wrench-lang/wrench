@@ -5,6 +5,10 @@
 #include "./include/value.h"
 
 
+void wrench_value_init(void);
+
+void wrench_value_deinit(void);
+
 void wrenc_value_free(const WrenchValue *val);
 
 

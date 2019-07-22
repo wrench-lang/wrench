@@ -2,10 +2,10 @@ DEPS_RUNTIME =
 DEPS_COMPILER = -l:$(MINOR_NAME)
 CFLAGS += -std=c11 -Wall -Wextra -Wconversion -pedantic -ftrapv -Wshadow -Wundef -Wcast-align -Wunreachable-code -Wno-switch -fstack-protector -fno-common -D_FORTIFY_SOURCE=2
 
-ifdef NODEBUG
-	CFLAGS += -O1 -Os -s
-else
+ifdef DEBUG
 	CFLAGS += -ggdb -fsanitize=address -fsanitize=leak -fsanitize=undefined -fno-omit-frame-pointer -lasan
+else
+	CFLAGS += -O1 -Os -s
 endif
 
 ifdef USE_MALLOC
@@ -15,12 +15,12 @@ endif
 
 CFLAGS += -I ./src
 CFLAGS_RUNTIME += $(CFLAGS) -isystem ./deps/map/src -I ./deps/mem-pool/include
-CFLAGS_COMPILER = $(CFLAGS)
-CFLAGS_TEST = $(CFLAGS) $(CFLAGS_RUNTIME) -I . -I ./deps/ctest
+CFLAGS_COMPILER = $(CFLAGS) -isystem ./deps/argparse -D _POSIX_C_SOURCE -D _GNU_SOURCE -D WRENCH_RUNTIME_VERSION=\"$(MINOR_NAME)\"
+CFLAGS_TEST = $(CFLAGS) $(CFLAGS_RUNTIME) $(CFLAGS_COMPILER) -I . -I ./deps/ctest
 
-SRC_RUNTIME = $(shell find src/runtime -name "*.c") $(shell find deps/mem-pool/src -name "*.c") $(shell find deps/map/src -name "*.c") 
-SRC_COMPILER = $(shell find src/compiler -name "*.c")
-TEST_SRC = $(shell find test -name "*.c") $(SRC_RUNTIME) $(shell find src/compiler -name "*.c" -not -name "main.c")
+SRC_RUNTIME = $(shell find src/runtime -name "*.c") $(shell find deps/mem-pool/src -name "*.c") $(shell find deps/map/src -name "*.c")
+SRC_COMPILER = $(shell find src/compiler -name "*.c") ./deps/argparse/argparse.c
+TEST_SRC = $(shell find test -name "*.c") $(SRC_RUNTIME) $(filter-out src/compiler/main.c,$(SRC_COMPILER))
 
 TARGET_RUNTIME = wrench-runtime
 TARGET_COMPILER = wrench
@@ -70,7 +70,7 @@ $(TARGET_RUNTIME): $(OBJECTS_RUNTIME)
 	$(CC) $(CFLAGS_RUNTIME) -shared -fpic -Wl,-soname,$(SONAME) -o $(FULL_NAME_RUNTIME) $(OBJECTS_RUNTIME) $(DEPS_RUNTIME)
 
 $(TARGET_COMPILER): install-runtime $(OBJECTS_COMPILER)
-	$(CC) $(CFLAGS_COMPILER)  -o $(FULL_NAME_COMPILER) $(OBJECTS_COMPILER) $(DEPS_COMPILER)
+	$(CC) $(CFLAGS_COMPILER) -o $(FULL_NAME_COMPILER) $(OBJECTS_COMPILER) $(DEPS_COMPILER)
 
 
 $(TEST_TARGET): install-runtime $(TEST_OBJECTS)
